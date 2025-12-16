@@ -1,11 +1,12 @@
 # tests/test_schemas.py
 import pytest
-from app.schemas import CalculationCreate, CalculationRead, UserCreate, UserLogin
+from app.schemas import CalculationCreate, UserCreate, UserLogin
 
 def test_calculation_create_valid():
     data = {"a": 5, "b": 3, "type": "Add"}
     calc = CalculationCreate(**data)
     assert calc.a == 5
+    assert calc.b == 3
     assert calc.type == "Add"
 
 def test_calculation_create_invalid_type():

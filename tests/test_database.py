@@ -1,9 +1,9 @@
 # tests/test_database.py
-import pytest
-from app.database import Base, User, Calculation, engine, hash_password, verify_password
+from app.models import User, Calculation, hash_password, verify_password
+from app.database import Base, engine, SessionLocal
 from sqlalchemy.orm import sessionmaker
 
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = SessionLocal
 
 def test_user_password_hashing():
     password = "mypassword"

@@ -1,0 +1,37 @@
+name: CI/CD Docker Deploy
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -v --tb=short
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.tampadu }}
+          password: ${{ secrets.dckr_pat_C-mJH29RFXilS-oV8lQjmwyEdIo }}
+
+      - name: Build Docker image
+        run: docker build -t username/fastapi-app:latest .
+
+      - name: Push Docker image
+        run: docker push username/fastapi-app:latest

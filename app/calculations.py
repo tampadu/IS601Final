@@ -1,46 +1,27 @@
-from fastapi import APIRouter, Depends, Request, Form
-from fastapi.responses import RedirectResponse
+# app/calculations.py
 from sqlalchemy.orm import Session
+from app.models import User, Calculation
 
-from app.database import Calculation, get_db
+def add_calculation(request, a: float, b: float, type: str, db: Session):
+    """Add a calculation for the current user."""
+    user_id = int(request.cookies.get("user_id"))
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise Exception("User not found")
 
-router = APIRouter()
-
-
-def get_user_id(request: Request) -> int:
-    return int(request.cookies.get("user_id"))
-
-
-@router.post("/add")
-def add_calculation(
-    request: Request,
-    a: float = Form(...),
-    b: float = Form(...),
-    type: str = Form(...),
-    db: Session = Depends(get_db),
-):
-    user_id = get_user_id(request)
-
-    if type == "add":
+    if type.lower() == "add":
         result = a + b
-    elif type == "subtract":
+    elif type.lower() == "subtract":
         result = a - b
-    elif type == "multiply":
+    elif type.lower() == "multiply":
         result = a * b
-    elif type == "divide":
+    elif type.lower() == "divide":
         result = a / b if b != 0 else 0
     else:
-        result = 0
+        raise ValueError("Invalid calculation type")
 
-    calculation = Calculation(
-        user_id=user_id,
-        a=a,
-        b=b,
-        type=type,
-        result=result
-    )
-
-    db.add(calculation)
+    calc = Calculation(user_id=user.id, a=a, b=b, type=type, result=result)
+    db.add(calc)
     db.commit()
-
-    return RedirectResponse("/calculations-page", status_code=303)
+    db.refresh(calc)
+    return calc

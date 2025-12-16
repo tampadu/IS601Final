@@ -1,53 +1,38 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.sql import func
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# --- Database configuration ---
+SQLALCHEMY_DATABASE_URL = "sqlite:///./app.db"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False}  # SQLite only
 )
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=True)
-    hashed_password = Column(String, nullable=False)
-    calculations = relationship("Calculation", back_populates="user", cascade="all, delete-orphan")
+# --- Password hashing helpers ---
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-class Calculation(Base):
-    __tablename__ = "calculations"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    a = Column(Float, nullable=False)
-    b = Column(Float, nullable=False)
-    type = Column(String, nullable=False)
-    result = Column(Float, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    user = relationship("User", back_populates="calculations")
+def hash_password(password: str) -> str:
+    """Hash a plain text password."""
+    return pwd_context.hash(password)
 
+def verify_password(password: str, hashed: str) -> bool:
+    """Verify a plain text password against a hashed password."""
+    return pwd_context.verify(password, hashed)
+
+# --- Dependency for FastAPI routes ---
 def get_db():
+    """Yield a database session, closing it after use."""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-Base.metadata.create_all(bind=engine)
-
-# Password helpers
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-def verify_password(password: str, hashed: str) -> bool:
-    return pwd_context.verify(password, hashed)
+# --- Initialize all tables ---
+def init_db():
+    from app import models  # import all models so Base.metadata sees them
+    Base.metadata.create_all(bind=engine)

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculations</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>My Calculations</h1>
+
+    <nav>
+        <a href="/profile">Profile</a> | 
+        <a href="/logout">Logout</a>
+    </nav>
+
+    <h2>Add Calculation</h2>
+    <form id="calc-form">
+        <label>Number A:</label>
+        <input type="number" step="any" id="input-a" required>
+
+        <label>Number B:</label>
+        <input type="number" step="any" id="input-b" required>
+
+        <label>Operation:</label>
+        <select id="input-type">
+            <option>Add</option>
+            <option>Sub</option>
+            <option>Multiply</option>
+            <option>Divide</option>
+        </select>
+
+        <button type="submit">Add</button>
+    </form>
+
+    <h2>Calculations</h2>
+    <table id="calc-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>A</th>
+                <th>B</th>
+                <th>Type</th>
+                <th>Result</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script src="/static/js/calculations.js"></script>
+</body>
+</html>

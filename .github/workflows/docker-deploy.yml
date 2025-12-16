@@ -1,37 +1,29 @@
-name: CI/CD Docker Deploy
+name: Docker Deploy
 
 on:
   push:
     branches:
-      - main  # Trigger on pushes to main branch
+      - docker-deploy
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run tests
-        run: pytest -v --tb=short
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.tampadu }}
-          password: ${{ secrets.dckr_pat_C-mJH29RFXilS-oV8lQjmwyEdIo }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-      - name: Build Docker image
-        run: docker build -t username/fastapi-app:latest .
-
-      - name: Push Docker image
-        run: docker push username/fastapi-app:latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/is601final:latest
